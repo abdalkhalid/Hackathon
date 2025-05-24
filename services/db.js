@@ -1,6 +1,8 @@
+// Load environment variables from .env file
+require("dotenv").config();
 const mongoose = require("mongoose");
 
-// Define schema for conversation history
+// Define schema for saving conversation history
 const messageSchema = new mongoose.Schema({
   userQuery: { type: String, required: true },
   botResponse: { type: String, required: true },
@@ -9,20 +11,25 @@ const messageSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now }
 });
 
-// Create model
+// Create Message model
 const Message = mongoose.model("Message", messageSchema);
 
-// Connect to MongoDB
+// MongoDB connection
 const connectDB = async () => {
   try {
+    if (!process.env.MONGODB_URI) {
+      throw new Error("MONGODB_URI not defined in .env file");
+    }
+
     await mongoose.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
-      useUnifiedTopology: true,
+      useUnifiedTopology: true
     });
+
     console.log("✅ MongoDB connected");
-  } catch (error) {
-    console.error("❌ MongoDB connection failed:", error.message);
-    process.exit(1); // Exit on failure
+  } catch (err) {
+    console.error("❌ MongoDB connection error:", err.message);
+    process.exit(1); // Exit the process if DB connection fails
   }
 };
 
