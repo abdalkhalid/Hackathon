@@ -1,33 +1,26 @@
-require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
-const { Message, connectDB } = require("./services/db");
-const generateWithGemini = require("./services/gemini");
+const { Message, connectDB } = require("../services/db");
+const generateWithGemini = require("../services/gemini");
 
 const app = express();
 app.use(bodyParser.json());
-const PORT = process.env.PORT || 3000;
 
-// Connect to MongoDB
 connectDB();
 
-// Keywords relevant to Kababjees Fried Chicken
 const kababjeesKeywords = [
   "menu", "burger", "deal", "fries", "chicken", "price", "order",
   "location", "branch", "booking", "delivery", "discount", "refund",
   "complaint", "dine-in", "takeaway", "timing", "opening hours"
 ];
 
-// Check if the query is related to Kababjees
 function isRelevant(query) {
   const text = query.toLowerCase();
   return kababjeesKeywords.some(keyword => text.includes(keyword));
 }
 
-// Simple intent detection based on keywords
 function detectIntent(query) {
   const q = query.toLowerCase();
-
   if (q.includes("menu")) return "MenuInquiry";
   if (q.includes("book") || q.includes("reserve")) return "Booking";
   if (q.includes("order status") || q.includes("track order")) return "OrderStatus";
@@ -35,7 +28,6 @@ function detectIntent(query) {
   return "UnknownIntent";
 }
 
-// Main webhook endpoint
 app.post("/webhook", async (req, res) => {
   const query = req.body.query || req.body.text || "";
   const intent = detectIntent(query);
@@ -66,7 +58,6 @@ app.post("/webhook", async (req, res) => {
     }
   }
 
-  // Log the conversation to MongoDB
   await Message.create({
     userQuery: query,
     botResponse,
@@ -80,6 +71,5 @@ app.post("/webhook", async (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Kababjees Fried Chicken chatbot webhook running on port ${PORT}`);
-});
+// Required for Vercel
+module.exports = app;
