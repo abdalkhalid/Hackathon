@@ -1,0 +1,18 @@
+{
+  "name": "kababjees-chatbot",
+  "version": "1.0.0",
+  "description": "AI-powered customer support webhook for Kababjees Fried Chicken",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.4.0",
+    "body-parser": "^1.20.2",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "mongoose": "^7.3.4"
+  }
+}
