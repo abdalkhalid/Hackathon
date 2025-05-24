@@ -6,29 +6,34 @@ const generateWithGemini = require("../services/gemini");
 const app = express();
 app.use(bodyParser.json());
 
+// Connect to MongoDB
 connectDB();
 
-const kababjeesKeywords = [
-  "menu", "burger", "deal", "fries", "chicken", "price", "order",
-  "location", "branch", "booking", "delivery", "discount", "refund",
-  "complaint", "dine-in", "takeaway", "timing", "opening hours"
+// Keywords relevant to Malco.pk logistics & transport services
+const malcoKeywords = [
+  "truck", "vehicle", "booking", "load", "cargo", "shipment", "delivery",
+  "status", "price", "rate", "charges", "refund", "route", "tracking",
+  "dispatch", "pickup", "dropoff", "transport", "logistics", "malco"
 ];
 
+// Determine if the query is relevant to Malco
 function isRelevant(query) {
   const text = query.toLowerCase();
-  return kababjeesKeywords.some(keyword => text.includes(keyword));
+  return malcoKeywords.some(keyword => text.includes(keyword));
 }
 
+// Simple intent detection for logistics-related queries
 function detectIntent(query) {
   const q = query.toLowerCase();
-  if (q.includes("menu")) return "MenuInquiry";
-  if (q.includes("book") || q.includes("reserve")) return "Booking";
-  if (q.includes("order status") || q.includes("track order")) return "OrderStatus";
+  if (q.includes("book") || q.includes("reserve") || q.includes("truck")) return "VehicleBooking";
+  if (q.includes("track") || q.includes("shipment status") || q.includes("delivery status")) return "ShipmentTracking";
+  if (q.includes("rate") || q.includes("price") || q.includes("charges")) return "RateInquiry";
   if (q.includes("refund")) return "RefundRequest";
   return "UnknownIntent";
 }
 
-app.post("/webhook", async (req, res) => {
+// Webhook endpoint
+app.post("/api/webhook", async (req, res) => {
   const query = req.body.query || req.body.text || "";
   const intent = detectIntent(query);
   const relevant = isRelevant(query);
@@ -36,24 +41,26 @@ app.post("/webhook", async (req, res) => {
   let botResponse = "";
 
   if (!relevant) {
-    botResponse = "I’m here to help with anything related to Kababjees Fried Chicken. Please let me know how I can assist you with our food, branches, or your order.";
+    botResponse = "I'm here to assist with anything related to Malco.pk logistics and transport services. You can ask me about vehicle bookings, rates, shipment tracking, and more.";
   } else {
     switch (intent) {
-      case "MenuInquiry":
-        botResponse = "Here is the Kababjees Fried Chicken menu: crispy burgers, spicy fried chicken, fries, drinks, and family meal deals. Would you like to know today’s specials?";
+      case "VehicleBooking":
+        botResponse = "Sure! To book a vehicle, please provide the type of truck needed, the pickup and dropoff locations, and the preferred date/time.";
         break;
-      case "Booking":
-        botResponse = "You can book a table at Kababjees Fried Chicken between 12 PM and 11 PM. Please provide the number of guests and preferred time.";
+      case "ShipmentTracking":
+        botResponse = "Please share your shipment or tracking ID so I can provide the current status.";
         break;
-      case "OrderStatus":
-        botResponse = "Please share your order number, and I will check the status for you.";
+      case "RateInquiry":
+        botResponse = "Rates depend on the route, vehicle type, and cargo load. Please provide those details to get an accurate quote.";
         break;
       case "RefundRequest":
-        botResponse = "We’re sorry for the inconvenience. Please provide your order number to process the refund.";
+        botResponse = "Sorry for the inconvenience. Kindly share your booking or transaction ID so we can process the refund.";
         break;
       default:
         usedGemini = true;
-        botResponse = await generateWithGemini(`As Kababjees Fried Chicken's customer support, respond confidently and clearly to: "${query}"`);
+        botResponse = await generateWithGemini(
+          `As Malco.pk's logistics customer support, respond clearly and professionally to: "${query}"`
+        );
         break;
     }
   }
@@ -67,9 +74,9 @@ app.post("/webhook", async (req, res) => {
 
   return res.json({
     fulfillmentText: botResponse,
-    source: "kababjees-fried-chicken-webhook"
+    source: "malco-logistics-webhook"
   });
 });
 
-// Required for Vercel
+// Export for Vercel
 module.exports = app;

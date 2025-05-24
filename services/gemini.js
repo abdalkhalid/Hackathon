@@ -13,7 +13,9 @@ const generateWithGemini = async (query) => {
       }
     );
 
+    // Extract generated text from response
     const generatedText = response.data.candidates?.[0]?.content?.parts?.[0]?.text;
+
     return generatedText || "Sorry, I couldn’t generate a response right now.";
   } catch (error) {
     console.error("Gemini API error:", error.message);
