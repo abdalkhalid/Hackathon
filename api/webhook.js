@@ -2,7 +2,7 @@ require("dotenv").config();
 const { connectDB, Message } = require("../services/db");
 const generateWithGemini = require("../services/gemini");
 
-module.exports = async function handler(req, res) {
+async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method Not Allowed" });
   }
@@ -47,4 +47,6 @@ module.exports = async function handler(req, res) {
     console.error("Error in webhook handler:", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
-};
+}
+
+export default handler;
