@@ -13,10 +13,16 @@ const generateWithGemini = async (query) => {
       }
     );
 
-    return response.data.candidates?.[0]?.content?.parts?.[0]?.text ||
-           "I'm not sure, could you rephrase that?";
+    // Safely get the generated text from response
+    return (
+      response.data.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "I'm not sure, could you rephrase that?"
+    );
   } catch (err) {
     console.error("Gemini error:", err.message);
+    if (err.response?.data) {
+      console.error("Gemini API response error:", err.response.data);
+    }
     return "Sorry, something went wrong. Please try again later.";
   }
 };
